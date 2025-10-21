@@ -1,21 +1,24 @@
-FROM node:lts-buster
+# ✅ Updated Base Image
+FROM node:lts-bullseye
 
-RUN apt-get update && \
-  apt-get install -y \
-  ffmpeg \
-  imagemagick \
-  webp && \
-  apt-get upgrade -y && \
-  rm -rf /var/lib/apt/lists/*
-  
+# ✅ Install required packages safely
+RUN apt-get update --allow-releaseinfo-change && \
+    apt-get install -y --no-install-recommends \
+      ffmpeg \
+      imagemagick \
+      webp && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+# ✅ Set working directory
 WORKDIR /usr/src/app
 
-COPY package.json .
+# ✅ Copy package.json and install dependencies
+COPY package.json package-lock.json* ./
+RUN npm install
 
-RUN npm install && npm install -g qrcode-terminal pm2
-
+# ✅ Copy rest of the repo
 COPY . .
 
-EXPOSE 5000
-
-CMD ["npm", "start"]
+# ✅ Default command
+CMD ["node", "index.js"]
